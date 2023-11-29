@@ -5,8 +5,13 @@ info:
     version: 1.0.0
 
 
+
 #Components are User, Profile, Photo and Comment. These defines the objects that are used in the API. 
 components:
+    securitySchemes:
+        bareAuth:
+            type: http
+            scheme: bearer
     schemas:
         User:
             title: User
@@ -103,6 +108,10 @@ components:
                     $ref: '#/components/schemas/User/properties/userID'
                 photoID: #Photo that has been commented
                     $ref: '#/components/schemas/Photo/properties/photoID'
+
+security:
+  - bareAuth: [] #this is the security scheme used in the API
+
 paths:
     /session:
         post:
@@ -453,7 +462,8 @@ paths:
             tags: ["like"]
             summary: Photo liked by a user
             description: |
-                Add a user to the list of users that liked a photo, considering the userID and photoID
+                Add a user to the list of users that liked a photo, considering the userID and photoID. 
+                The user can like a photo only once. If the user has already liked the photo, the request will be rejected.
             operationId: likePhoto
             parameters:
               - $ref: '#/components/schemas/Photo/properties/photoID'
@@ -477,11 +487,20 @@ paths:
                             schema: 
                                 type : string
                                 example: Photo not found
+                "409":
+                    description: Photo already liked by the user
+                    content:
+                        application/json:
+                            schema: 
+                                type : string
+                                example: Photo already liked by the user
         delete:
             tags: ["like"]
             summary: Photo unliked by a user
             description: |
-                Remove a user from the list of users that liked a photo, considering the userID and photoID
+                Remove a user from the list of users that liked a photo, considering the userID and photoID.
+                The user can unlike a photo only if he has already liked it.
+                If the user has not liked the photo, the request will be rejected.
             operationId: unlikePhoto
             parameters:
               - $ref: '#/components/schemas/Photo/properties/photoID'
@@ -511,7 +530,8 @@ paths:
             tags: ["stream"]
             summary: Get the stream of a user
             description: |
-                Get the stream of a user, given the userID
+                Get the stream of a user, given the userID. 
+                The stream is the list of photos uploaded by the users followed by the user, where he can scroll all the photos. 
             operationId: getStream
             parameters:
               - $ref: '#/components/schemas/User/properties/userID'
