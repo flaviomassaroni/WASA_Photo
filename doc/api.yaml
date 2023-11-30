@@ -12,6 +12,7 @@ components:
         bareAuth:
             type: http
             scheme: bearer
+            bearerFormat: JWT
     schemas:
         User:
             title: User
