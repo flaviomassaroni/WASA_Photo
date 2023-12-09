@@ -536,7 +536,7 @@ components:
           description: |
             The unique ID of the user.
           $ref: '#/components/schemas/User/properties/userID'
-        followed_:
+        followed:
           description: |
             The users that the user follows.
           type: array
