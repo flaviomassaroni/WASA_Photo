@@ -5,6 +5,35 @@ info:
     WasaPhoto is a photo sharing application that allows users to upload photos and share them with other users.
   version: 1.0.0
 
+tags:
+  - name: login
+    description: |
+      The login tag is used for logging in to the application or to create a new user.
+  - name: user
+    description: |
+      The user tag is used for users' profile related actions, such as changing the username.
+  - name: get-profile
+    description: |
+      The get-profile tag is used for getting the profile of a user.
+  - name: photo
+    description: |
+      The photo tag is used for photo related actions, such as uploading a photo.
+  - name: comment
+    description: |
+      The comment tag is used for comment related actions, such as adding a comment to a photo.
+  - name: like
+    description: |
+      The like tag is used for like related actions, such as liking a photo.
+  - name: follow
+    description: |
+      The follow tag is used for follow related actions, such as following a user.
+  - name: ban
+    description: |
+      The ban tag is used for ban related actions, such as banning a user.
+  - name: stream
+    description: |
+      The stream tag is used for stream related actions, such as getting the stream of a user.
+
 security:
   - bearerAuth: [] # Use bearerAuth security scheme defined below
 
@@ -15,12 +44,13 @@ paths:
       summary: |
         Login to the application. If the user does not exist, a new user is created, and an identifier is returned.
         If the user exists, the user identifier is returned.
+      operationId: doLogin
       requestBody:
         description: User details
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User/properties/username'
+              $ref: '#/components/schemas/User'
         required: true
       responses:
         '201':
@@ -48,19 +78,13 @@ paths:
         Sets the user username, given an userID. The new username must be unique and different from the old username.
       operationId: setMyUserName
       parameters:
-        - name: userID
-          in: path
-          description: |
-            The unique ID of the user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/userID'
+        - $ref: '#/components/parameters/UserIDPathParam'
       requestBody:
         description: User details
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User/properties/username' #the new username has to be given in the request body.
+              $ref: '#/components/schemas/User' #the new username has to be given in the request body.
         required: true
       
       responses:
@@ -89,13 +113,7 @@ paths:
         Gets the user profile, given an userID.
       operationId: getUserProfile
       parameters:
-        - name: username
-          in: path
-          description: |
-            The unique username of the user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/username'
+        - $ref: '#/components/parameters/UserIDPathParam'
       responses:
         '200':
           description: |
@@ -111,7 +129,7 @@ paths:
           description: |
             User profile retrieval failed. The user does not exist.
   
-  /users/{userID}/photos:
+  /users/{userID}/photos{photoID}:
     post:
       tags: ["photo"]
       summary: Uploads a photo.
@@ -119,13 +137,8 @@ paths:
         Uploads a photo, given an userID. The photo must be in .jpg format.
       operationId: uploadPhoto
       parameters:
-        - name: userID
-          in: path
-          description: |
-            The unique ID of the user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/userID'
+        - $ref: '#/components/parameters/UserIDPathParam'
+        - $ref: '#/components/parameters/PhotoIDPathParam'
       requestBody:
         description: Photo and photo details
         content:
@@ -155,20 +168,8 @@ paths:
         Deletes a photo, given an userID and a photoID.
       operationId: deletePhoto
       parameters:
-        - name: userID
-          in: path
-          description: |
-            The unique ID of the user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/userID'
-        - name: photoID
-          in: path
-          description: |
-            The unique ID of the photo.
-          required: true
-          schema:
-            $ref: '#/components/schemas/Photo/properties/photoID'
+        - $ref: '#/components/parameters/UserIDPathParam'
+        - $ref: '#/components/parameters/PhotoIDPathParam'
       responses:
         '204':
           description: |
@@ -188,26 +189,14 @@ paths:
         Adds a comment to a photo, given an userID and a photoID.
       operationId: commentPhoto
       parameters:
-        - name: userID
-          in: path
-          description: |
-            The unique ID of the user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/userID'
-        - name: photoID
-          in: path
-          description: |
-            The unique ID of the photo.
-          required: true
-          schema:
-            $ref: '#/components/schemas/Photo/properties/photoID'
+        - $ref: '#/components/parameters/UserIDPathParam'
+        - $ref: '#/components/parameters/PhotoIDPathParam'
       requestBody:
         description: Comment details
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Comment/properties/commentText'
+              $ref: '#/components/schemas/Comment'
         required: true
       responses:
         '201':
@@ -238,6 +227,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/Comment/properties/commentID'
+        - $ref: '#/components/parameters/PhotoIDPathParam'
       responses:
         '204':
           description: |
@@ -257,24 +247,16 @@ paths:
         Likes a photo, given an userID and a photoID.
       operationId: likePhoto
       parameters:
-        - name: userID
-          in: path
-          description: |
-            The unique ID of the user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/userID'
-        - name: photoID
-          in: path
-          description: |
-            The unique ID of the photo.
-          required: true
-          schema:
-            $ref: '#/components/schemas/Photo/properties/photoID'
+        - $ref: '#/components/parameters/UserIDPathParam'
+        - $ref: '#/components/parameters/PhotoIDPathParam'
       responses:
-        '201':
+        '200':
           description: |
             Photo like successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User/properties/userID' #the userID of the user that liked the photo is returned in the response body.
         '403':
           description: |
             Photo like failed. The user does not have permission to like this photo.
@@ -289,20 +271,8 @@ paths:
         Unlikes a photo, given an userID and a photoID.
       operationId: unlikePhoto
       parameters:
-        - name: userID
-          in: path
-          description: |
-            The unique ID of the user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/userID'
-        - name: photoID
-          in: path
-          description: |
-            The unique ID of the photo.
-          required: true
-          schema:
-            $ref: '#/components/schemas/Photo/properties/photoID'
+        - $ref: '#/components/parameters/UserIDPathParam'
+        - $ref: '#/components/parameters/PhotoIDPathParam'
       responses:
         '204':
           description: |
@@ -325,19 +295,13 @@ paths:
         Follows a user, given the userID of the follower and the username of the following.
       operationId: followUser
       parameters:
-        - name: userID
-          in: path
-          description: |
-            The unique ID of the user that wants to follow another user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/userID'
+        - $ref: '#/components/parameters/UserIDPathParam'
       requestBody:
         description: User details
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User/properties/username'
+              $ref: '#/components/schemas/User'
         required: true
       responses:
         '200':
@@ -353,7 +317,8 @@ paths:
         '404':
           description: |
             User follow failed. The user does not exist.
-    
+  
+  /user/{userID}/profile/follows/{username}:
     delete:
       tags: ["follow"]
       summary: Unfollows a user.
@@ -361,24 +326,22 @@ paths:
         Unfollows a user, given the userID of the follower and the username of the following.
       operationId: unfollowUser
       parameters:
-        - name: userID
+        - $ref: '#/components/parameters/UserIDPathParam'
+        - name: username
           in: path
           description: |
-            The unique ID of the user that wants to unfollow another user.
+            The username of the user that is followed.
           required: true
           schema:
-            $ref: '#/components/schemas/User/properties/userID'
-      requestBody:
-        description: User details
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User/properties/username'
-        required: true
+            $ref: '#/components/schemas/User/properties/username'
       responses:
-        '204':
+        '200':
           description: |
             User unfollow successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User/properties/userID' #the userID of the user that is unfollowed is returned in the response body.
         '403':
           description: |
             User unfollow failed. The user does not have permission to unfollow this user. The user may be banned.
@@ -397,19 +360,13 @@ paths:
         Bans a user, given the userID of the banner and the username of the banned.
       operationId: banUser
       parameters:
-        - name: userID
-          in: path
-          description: |
-            The unique ID of the user that wants to ban another user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/userID'
+        - $ref: '#/components/parameters/UserIDPathParam'
       requestBody:
         description: User details
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User/properties/username'
+              $ref: '#/components/schemas/User'
         required: true
       responses:
         '200':
@@ -436,19 +393,13 @@ paths:
         Unbans a user, given the userID of the banner and the username of the banned.
       operationId: unbanUser
       parameters:
-        - name: userID
-          in: path
-          description: |
-            The unique ID of the user that wants to unban another user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/userID'
+        - $ref: '#/components/parameters/UserIDPathParam'
       requestBody:
         description: User details
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User/properties/username'
+              $ref: '#/components/schemas/User'
         required: true
       responses:
         '200':
@@ -477,13 +428,7 @@ paths:
         The stream is the collection of photos of the users that the user follows. He can scroll trough them.
       operationId: getMyStream
       parameters:
-        - name: userID
-          in: path
-          description: |
-            The unique ID of the user.
-          required: true
-          schema:
-            $ref: '#/components/schemas/User/properties/userID'
+        - $ref: '#/components/parameters/UserIDPathParam'
       responses:
         '200':
           description: |
@@ -508,6 +453,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      
   schemas:
     User:
       type: object
@@ -624,3 +570,25 @@ components:
           description: |
             The unique ID of the photo that the comment is written for.
           $ref: '#/components/schemas/Photo/properties/photoID'
+
+  parameters:
+    UserIDPathParam:
+      name: userID
+      in: path
+      description: |
+        The unique ID of the user.
+      required: true
+      schema:
+        $ref: '#/components/schemas/User/properties/userID'
+    
+    PhotoIDPathParam:
+      name: photoID
+      in: path
+      description: |
+        The unique ID of the photo.
+      required: true
+      schema:
+        $ref: '#/components/schemas/Photo/properties/photoID'
+
+
+
