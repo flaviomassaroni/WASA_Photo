@@ -567,6 +567,3 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/Photo/properties/photoID'
-
-
-
