@@ -455,6 +455,8 @@ components:
           description: |
             The users that the user follows.
           type: array
+          minItems: 0
+          maxItems: 1000
           items:
             description: |
               The user that the user follows.
@@ -463,6 +465,8 @@ components:
           description: |
             The users that the user has banned.
           type: array
+          minItems: 0
+          maxItems: 1000
           items:
             description: |
               The user that the user has banned.
@@ -471,6 +475,8 @@ components:
           description: |
             The photos that the user has uploaded.
           type: array
+          minItems: 0
+          maxItems: 1000
           items:
             description: |
               The photo that the user has uploaded.
@@ -507,6 +513,8 @@ components:
           description: |
             The users that have liked the photo.
           type: array
+          minItems: 0
+          maxItems: 1000
           items:
             description: |
               The user that has liked the photo.
