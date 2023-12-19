@@ -458,8 +458,6 @@ components:
           minItems: 0
           maxItems: 1000
           items:
-            description: |
-              The user that the user follows.
             $ref: '#/components/schemas/User'
         banned:
           description: |
@@ -468,8 +466,6 @@ components:
           minItems: 0
           maxItems: 1000
           items:
-            description: |
-              The user that the user has banned.
             $ref: '#/components/schemas/User'
         photos:
           description: |
@@ -478,8 +474,6 @@ components:
           minItems: 0
           maxItems: 1000
           items:
-            description: |
-              The photo that the user has uploaded.
             $ref: '#/components/schemas/Photo'
     Photo:
       description: |
@@ -516,8 +510,6 @@ components:
           minItems: 0
           maxItems: 1000
           items:
-            description: |
-              The user that has liked the photo.
             $ref: '#/components/schemas/User'
     Comment:
       description: |
