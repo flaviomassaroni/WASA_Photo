@@ -127,7 +127,7 @@ paths:
           description: |
             User profile retrieval failed. The user does not exist.
   
-  /users/{userID}/photos{photoID}:
+  /users/{userID}/photos/{photoID}:
     post:
       tags: ["photo"]
       summary: Uploads a photo.
