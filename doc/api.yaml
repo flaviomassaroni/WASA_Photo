@@ -1,0 +1,707 @@
+openapi: 3.0.0
+servers:
+  - url: "http://localhost:3000"
+
+info:
+  title: WASAPhoto API 
+  description: |-
+    Keep in touch with your friends by sharing photos of special moments, thanks to WASAPhoto! You can
+    upload your photos directly from your PC, and they will be visible to everyone following you.
+  version: 0.0.1
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
+     
+  schemas:
+    uuid:
+      description: The general schema of the identifiers
+      type: string
+      pattern: '^[0-9a-f]{12}$'
+      example: '0800275d0f23'
+      minLength: 12
+      maxLength: 12
+
+    User:
+      title: User
+      description: This object represents an user
+      type: object
+      properties:
+        userID:
+          $ref: '#/components/schemas/uuid'
+        username:
+          description: |
+            Each user has its own unique username, used to log-in. The username is chosen by the user and it's visible by everyone.
+            The username is what is used to search for other users.
+          type: string
+          example: Maria
+          pattern: '^.*?$'
+          minLength: 3
+          maxLength: 16
+          readOnly: false
+        profile:
+          $ref: '#/components/schemas/Profile'
+
+    Profile:
+      title: Profile
+      description: This represents the profile elements of a registered user
+      type: object
+      properties:
+        photos:
+          description: The list of photos uploaded by the user
+          type: array
+          items: { $ref: '#/components/schemas/Photo'}
+          minItems: 0
+          maxItems: 1000
+        followers:
+          description: The list of people following the user
+          type: array
+          items: { $ref: '#/components/schemas/User/properties/username' }
+          minItems: 0
+          maxItems: 10000
+        following:
+          description: The list of people followed by the user
+          type: array
+          items: { $ref: '#/components/schemas/User/properties/username' }
+          minItems: 0
+          maxItems: 10000
+        banned:
+          description: The list of people banned by the user
+          type: array
+          items: { $ref: '#/components/schemas/User/properties/username' }
+          minItems: 0
+          maxItems: 10000
+          
+    Photo:
+      title: Photo
+      description: This object represents an uploaded image
+      type: object
+      properties:
+        photoID:
+          $ref: '#/components/schemas/uuid'
+        authorID:
+          $ref: '#/components/schemas/uuid'
+        picture:
+          description: The picture file
+          type: string
+          format: binary
+          minLength: 67
+          maxLength: 1000000000
+        dateAndTime:
+          description: The date and hour when the image was uploaded
+          type: string
+          format: date-time
+          example: "2017-07-21T17:32:28Z"
+          readOnly: true
+          minLength: 20
+          maxLength: 20
+        likes:
+          description: The list of users who liked a photo
+          type: array
+          items: { $ref: '#/components/schemas/Like' }
+          minItems: 0
+          maxItems: 10000
+        comments:
+          description: The list of users who commented a photo along with their comment
+          type: array
+          items: { $ref: '#/components/schemas/Comment' }
+          minItems: 0
+          maxItems: 10000
+
+    Like:
+      title: Like
+      description: This schema represents a like added to a photo
+      type: object
+      properties:
+        likeID:
+          $ref: '#/components/schemas/uuid'
+        username: 
+          $ref: '#/components/schemas/User/properties/username'
+        photoID:
+          $ref: '#/components/schemas/uuid'
+        dateAndTime:
+          description: The date and time at which the like was left
+          type: string
+          format: date-time
+          example: "2017-07-21T17:32:28Z"
+          readOnly: true
+          minLength: 20
+          maxLength: 20
+
+    Comment:
+      title: Comment
+      description: This schema represents a comment added to a photo with its data
+      type: object
+      properties:
+        commentID:
+          $ref: '#/components/schemas/uuid'
+        username:
+          $ref: '#/components/schemas/User/properties/username'
+        photoID:
+          $ref: "#/components/schemas/uuid"
+        commentText:
+          description: The text of the comment
+          type: string
+          pattern: '^.*?$'
+          example: "Nice photo!"
+          minLength: 1
+          maxLength: 100
+        dateAndTime:
+          description: The date and huors when the comment was left
+          type: string
+          format: date-time
+          example: "2017-07-21T17:32:28Z"
+          readOnly: true
+          minLength: 20
+          maxLength: 20
+    
+    Stream:
+      title: Stream
+      description: This schema represents the stream presented to the logged user
+      type: object
+      properties:
+        photos:
+          description: The list of photos in the user stream
+          type: array
+          items: { $ref: '#/components/schemas/Photo' }
+          minItems: 0
+          maxItems: 100
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Login
+    description: Login implementation
+  - name: Settings
+    description: Operation on user's own profile
+  - name: Social
+    description: Everything concerning interactions with other users
+  - name: Photos
+    description: Management and data about photos
+
+paths:
+  /session:
+    parameters: 
+      - name: username
+        in: query
+        description: The username of the logging user 
+        required: true
+        schema: { $ref: '#/components/schemas/User/properties/username' }
+    post:
+      tags: ["Login"]
+      summary: Logs in the user
+      description: |-
+        If the user does not exist, it will be created,
+        and an identifier is returned.
+        If the user exists, the user identifier is returned.
+      operationId: doLogin
+      responses:
+        '201':
+          description: User log-in action successful
+          content:
+            application/json:
+              schema:
+                { $ref: '#/components/schemas/User' }
+        '400':
+          description: Invalid username provided
+          content:
+            application/json:
+              schema:
+                { $ref: '#/components/schemas/User' }   
+
+  /users/{username}:
+    parameters:
+        - name: userID
+          in: query
+          description: The ID of the logged user 
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+        - name: username
+          in: path
+          description: The username of the searched user
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
+    put:
+      tags: ["Settings"]
+      operationId: setMyUserName
+      summary: Set the username
+      description: |
+        This method allows the user to change te username. It returns the new username, along with an error message if it is already used.
+      requestBody:
+        description: Set the username
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User/properties/username' }
+        required: true
+      responses:
+        "200":
+          description: New username succesfully set 
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "400":
+          description: Invalid username provided
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+    get:
+      tags: ["Social"]
+      operationId: getUserProfile
+      summary: Return user profile by username
+      description: Retutn the profile requested by the user
+      responses:
+        "200":
+          description: User succesfully returned
+          content:
+            application/json: 
+              schema: { $ref: '#/components/schemas/User'}
+        "400":
+          description: Invalid username provided
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "404":
+          description: Username not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /users/{username}/photos:
+    parameters:
+        - name: username
+          in: path
+          description: The username of the acting user
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
+        - name: userID
+          in: query
+          description: The ID of the logged user 
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+    post:
+      tags: ["Photos"]
+      operationId: uploadPhoto
+      summary: Upload a photo
+      description: |
+        This method allows to upload a new photo on the user profile.
+      requestBody:
+        required: true
+        content:
+          image/jpeg: 
+            schema: { $ref: '#/components/schemas/Photo/properties/picture' }
+      responses:
+        "201": 
+          description: New photo succesfully uploaded
+          content:
+           application/json:
+             schema: { $ref: "#/components/schemas/Photo" }
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Photo' }
+        "415":
+          description: The uploaded photo is of the wrong format
+          content:
+            application/json: 
+              schema: { $ref: "#/components/schemas/Photo" }
+  
+  /users/{username}/photos/{photoID}:
+    parameters:
+        - name: username
+          in: path
+          description: The username of the acting user
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+        - name: userID
+          in: query
+          description: The ID of the logged user 
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+        - name: photoID
+          in: path
+          description: The ID of the photo being deleted
+          required: true
+          schema: { $ref: '#/components/schemas/Photo/properties/photoID' }
+    delete:
+      tags: ["Photos"]
+      operationId: deletePhoto
+      summary: Delete a photo
+      description: | 
+        This method allows a user to delete one of his uploaded photos.
+      responses:
+        "200": 
+          description: Photo succesfully deleted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Photo' }
+        "403":
+          description: The user is not authorized to delete the photo 
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Photo' }
+  
+  /users/{username}/followers/{followedUsername}:
+    parameters:
+        - name: username
+          in: path
+          description: The username of the acting user
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+        - name: userID
+          in: query
+          description: The ID of the logged user 
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+        - name: followedUsername
+          in: path
+          description: The username of the person the acting user wants to follow or unfollow
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
+    put:
+      tags: ["Social"]
+      operationId: followUser
+      summary: Follow another user
+      description: |
+        This methos allows the user to follow other people. After following, the user will see the followed person's photos in his stream
+      responses:
+        "200":
+          description: User succefully followed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "400":
+          description: Invalid username provided
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "404":
+          description: Username not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+          
+    delete:
+      tags: ["Social"]
+      operationId: unfollowUser
+      summary: Unfollow anothe user
+      description: |
+        This method takes an username inside the list of the followed ones and removes it from the list
+      responses:
+        "200":
+          description: User succefully unfollowed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "400":
+          description: Invalid username provided
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "404":
+          description: Username not found in the followed list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /users/{username}/banned/{bannedUsername}:
+    parameters:
+        - name: username
+          in: path
+          description: The username of the acting user
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+        - name: userID
+          in: query
+          description: The ID of the logged user 
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+        - name: bannedUsername
+          in: path
+          description: The username of the person the acting user wants to ban or unban
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/username' }
+    put:
+      tags: ["Social"]
+      operationId: banUser
+      summary: Ban a user
+      description: |
+        This method allows a user to prevent some other user from seeing his photos.
+      responses:
+        "200":
+          description: The user is succesfully banned and added to a blacklist
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "400":
+          description: Invalid username to ban provided
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "404":
+          description: Username to ban not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+    delete:
+      tags: ["Social"]
+      operationId: unbanUser 
+      summary: Unban a user
+      description: |
+        This method allows to remove a precedently banned user from the blacklist
+      responses:
+        "200":
+          description: User succesfully unbanned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "404":
+          description: Username is not found inside the blacklist
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /photos/{photoID}/likes:
+    parameters:
+        - name: photoID
+          in: path
+          description: The id of the photo being liked
+          required: true
+          schema: { $ref: '#/components/schemas/Photo/properties/photoID' }
+        - name: userID
+          in: query
+          description: The ID of the logged user 
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+    post:
+      tags: ["Photos"]
+      operationId: likePhoto
+      summary: Add a like to a photo
+      description: |
+        This method allows to add a like to a photo. It also records the username of the user that liked it.
+      responses:
+        "201":
+          description: A like is succesfully added to the photo and the username of who liked is registered. The photo is returned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Like' }
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "403":
+          description: User not authorized to leave a like
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "404":
+          description: Photo non found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /photos/{photoID}/likes/{likeID}:
+    parameters:
+        - name: photoID
+          in: path
+          description: The id of the photo being unliked
+          required: true
+          schema: { $ref: '#/components/schemas/Photo/properties/photoID' }
+        - name: userID
+          in: query
+          description: The ID of the logged user 
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+        - name: likeID
+          in: path
+          description: The id of the like being removed
+          required: true
+          schema: { $ref: '#/components/schemas/Like/properties/likeID'}
+    delete:
+      tags: ["Photos"]
+      operationId: unlikePhoto
+      summary: Remove a like from a photo
+      description: |
+        This method allows to remove a like from a photo. It also removes the username of the user performing the action.
+      responses:
+        "200":
+          description: Like is succefully removed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Photo' }
+        "204":
+          description: There is not a like of this user to remove
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /photos/{photoID}/comments:
+    parameters:
+        - name: userID
+          in: query
+          description: The ID of the logged user 
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+        - name: photoID
+          in: path
+          description: The ID of the photo being commented
+          required: true
+          schema: { $ref: '#/components/schemas/Photo/properties/photoID' }
+    post:
+      tags: ["Photos"]
+      operationId: commentPhoto
+      summary: Add a comment to a photo
+      description: |
+        This method allows the user to add a comment to a photo. It also records the username of the user that commented, time and date.
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Comment/properties/commentText' }
+        required: true
+      responses:
+        "201":
+          description: Comment is succesfully added to the photo and the username who commented is registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comment' }
+        "400":
+          description: Bad request or invalid request payload
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "403":
+          description: User is not authorized to leave a comment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /photos/{photoID}/comments/{commentID}:
+    parameters:
+        - name: userID
+          in: query
+          description: The ID of the logged user 
+          required: true
+          schema: { $ref: '#/components/schemas/User/properties/userID' }
+        - name: photoID
+          in: path
+          description: The ID of the photo being commented
+          required: true
+          schema: { $ref: '#/components/schemas/Photo/properties/photoID' }
+        - name: commentID
+          in: path
+          description: The ID of the comment being removed
+          required: true
+          schema: { $ref: '#/components/schemas/Comment/properties/commentID' }
+    delete:
+      tags: ["Photos"]
+      operationId: uncommentPhoto
+      summary: Remove a comment from a photo
+      description: This method allows to remove a comment from a photo
+      responses:
+        "200":
+          description: Comment is succefully removed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Photo' }
+        "204":
+          description: There is not a comment of this user to remove
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "403":
+          description: User is not authorized to remove the comment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        "404":
+          description: Comment non found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /stream:
+    parameters:
+          - name: userID
+            in: query
+            description: The ID of the logged user 
+            required: true
+            schema: { $ref: '#/components/schemas/User/properties/userID' }
+    get:
+      tags: ["Social"]
+      operationId: getMyStream
+      summary: Get the stream for a user
+      description: |
+        Each user will be presented with a stream of photos (images) in reverse chronological order, with information about when each photo was uploaded and how many likes and comments it has. The stream is composed by photos from following list of the user.
+      parameters:
+        - name: time
+          in: query
+          description: The time at which the stream is requested
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: "2017-07-21T17:32:28Z"
+            minLength: 20
+            maxLength: 20
+      responses:
+        "200":
+          description: Stream succesfully returned
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Stream' }
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Stream' }
+        "401":
+          description: The user is non correctly authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Stream' }
