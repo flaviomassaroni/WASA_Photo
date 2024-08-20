@@ -273,9 +273,9 @@ export default {
     justify-content: space-between;
 }
 .author-container {
-    border: 1px solid gray;
-    border-radius: 5px;
     display: flex;
+    border: 1px solid gray;
+    border-radius: 8px;
     cursor: pointer;
 }
 
@@ -283,10 +283,10 @@ export default {
     margin-top: 10px;
 }
 .comments{
-    max-height: 150px; /* Set the maximum height for the scrollable area */
-    overflow-y: auto; /* Enable vertical scrolling */
-    border: 1px solid #ccc; /* Optional: Add a border for clarity */
-    padding: 10px; /* Optional: Add padding for spacing */
+    max-height: 150px; 
+    overflow-y: auto; 
+    border: 1px solid #ccc; 
+    padding: 10px; 
 }
 .comment {
     display: flex;
@@ -311,11 +311,16 @@ export default {
     display: flex;
     align-items: center;
     padding: 3px;
-    font-size:16px
+    font-size: 16px;
+    font-family: sans-serif;
 }
 .author-container div .nav-link {
-    margin-right: 250px;
+    display: flex;
+    align-items: center;
+    margin-right: 145px; 
+    width: 200px; 
 }
+
 
 .photo-date-rigth {
     font-size: 14px;
@@ -332,6 +337,7 @@ export default {
     align-items: center;
     justify-content: center; 
     border-radius: 5px;
+    padding-top: 10px;
 }
 
 .image-container img {

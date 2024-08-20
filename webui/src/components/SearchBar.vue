@@ -57,9 +57,11 @@ export default {
   outline: none;
   border-radius: 10px;
 }
+  
 .center-placeholder::placeholder {
   text-align: left;
 }
+
 .search-bar button {
   padding: 8px;
   border: none;

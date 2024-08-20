@@ -53,6 +53,13 @@ export default {
                 this.photos[idx] = updatedPhoto;
             }
         },
+
+		logout() {
+			// Clear session storage
+			sessionStorage.clear();
+			// Redirect to login page
+			this.$router.replace("/session");
+		}
 	},
 
 	mounted() {
@@ -65,17 +72,22 @@ export default {
 }
 </script>
 
+
+
 <template>
-	<div >
+	<div>
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-			<h1 class="h2">Home page</h1>
+			<h1 class="h2">Home Page</h1>
 			<div class="d-flex align-items-center">
 				<SearchBar />
 			</div>
 			<div class="btn-toolbar mb-2 mb-md-0">
 				<div class="btn-group me-2">
 					<button type="button" class="btn btn-sm btn-outline-secondary" @click="loadStream()">
-						Refresh
+						Refresh stream
+					</button>
+					<button type="button" class="btn btn-sm btn-outline-danger" @click="logout">
+						Log Out
 					</button>
 				</div>
 			</div>
@@ -83,7 +95,7 @@ export default {
 
 		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 		<div v-show="emptyStreamBanner" class="alert alert-warning" role="alert">
-			Wow, so empty! Start following users!
+			Your feed is completely empty! Follow some users to see their posts.
 		</div>
 		<div>
 			<LoadingSpinner :loading="loading" />
@@ -93,13 +105,19 @@ export default {
 				<PhotoCard 
 					:photo="photo"
 					@update-photo="updatePhoto"
-					/>
+				/>
 				<br>
 			</div>
 		</div>
-		
 	</div>
 </template>
 
+
 <style>
+.stream-container {
+	padding-left: 350px;	
+
+	flex-wrap: wrap;
+	justify-content: center;
+}
 </style>

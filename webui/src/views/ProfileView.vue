@@ -317,7 +317,6 @@ export default {
 </script>
 
 <template>
-    <!-- <h1 v-if="!this.logged" class="positive-banner" style="margin-top: 40px;">Please log-in to see profile contents</h1> -->
     <div>
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h2>Profile page</h2>
@@ -385,7 +384,7 @@ export default {
                 </div>
                 <hr>
                 <div class="change-username">
-                    <h4>Change Username</h4>
+                    <h3>Change Username</h3>
                     <form id="username-form" @submit.prevent="changeUsername(newUsername)">
                         New Username: <input type="text" v-model="newUsername" /><br />
                         <button type="button" class="btn btn-sm btn-outline-secondary" @click="changeUsername(newUsername)">Change Username</button>
@@ -424,7 +423,7 @@ export default {
     width: 80%;
     margin-right: 30px;
 }
-/* maybe do it with a grid */
+
 .horizontal-photo-container {
     display: flex;
     flex-direction: row;
