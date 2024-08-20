@@ -259,7 +259,14 @@ export default {
             if (idx !== -1) {
                 this.profilePhotos[idx] = updatedPhoto;
             }
-        }
+        },
+        
+        logout() {
+			// Clear session storage
+			sessionStorage.clear();
+			// Redirect to login page
+			this.$router.replace("/session");
+		}
 
 	},
     
@@ -326,7 +333,10 @@ export default {
 			<div class="btn-toolbar mb-2 mb-md-0">
 				<div class="btn-group me-2">
 					<button type="button" class="btn btn-sm btn-outline-secondary" @click="loadProfile(pathUser)">
-						Refresh
+						Refresh stream
+					</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" @click="logout">
+						Log Out
 					</button>
 				</div>
 			</div>
