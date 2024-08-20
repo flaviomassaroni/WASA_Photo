@@ -17,6 +17,7 @@ components:
       bearerFormat: JWT 
      
   schemas:
+  
     uuid:
       description: The general schema of the identifiers
       type: string
