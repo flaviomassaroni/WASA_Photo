@@ -116,7 +116,6 @@ export default {
 <style>
 .stream-container {
 	padding-left: 350px;	
-
 	flex-wrap: wrap;
 	justify-content: center;
 }
