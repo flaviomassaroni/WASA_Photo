@@ -21,7 +21,7 @@ func (db *appdbimpl) AddComment(commentObj string) error {
 		add_comment.DateAndTime)
 
 	if err != nil {
-		return fmt.Errorf("error liking the photo")
+		return fmt.Errorf("error commenting the photo")
 	}
 	return nil
 }

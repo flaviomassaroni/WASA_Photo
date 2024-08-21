@@ -22,7 +22,7 @@ func (rt *_router) banUser(w http.ResponseWriter, r *http.Request, ps httprouter
 		return
 	}
 
-	// check username to ban and proceed it exists
+	// check username to ban and proceed if exists
 	bannedUsername := ps.ByName("bannedUsername")
 	if bannedUsername == username || bannedUsername == "" || len(bannedUsername) < 3 || len(bannedUsername) > 16 {
 		w.WriteHeader(http.StatusBadRequest)

@@ -22,6 +22,7 @@ func (rt *_router) setUsername(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
+	// check the new username
 	newUsername, err := io.ReadAll(r.Body)
 	if string(newUsername) == "" || len(string(newUsername)) < 3 || len(string(newUsername)) > 16 {
 		w.WriteHeader(http.StatusBadRequest)

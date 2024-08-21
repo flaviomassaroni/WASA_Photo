@@ -21,7 +21,7 @@ func (rt *_router) unbanUser(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	// check username to follow and proceed it exists
+	// check username to follow and proceed if exists
 	reqUsername := ps.ByName("username")
 	unbannedUsername := ps.ByName("unbannedUsername")
 	if unbannedUsername == reqUsername || unbannedUsername == "" || len(unbannedUsername) < 3 || len(unbannedUsername) > 16 {

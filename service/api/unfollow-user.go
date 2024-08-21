@@ -22,7 +22,7 @@ func (rt *_router) unfollowUser(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	// check username to unfollow and proceed it exists
+	// check username to unfollow and proceed if exists
 	unfollowedUsername := ps.ByName("unfollowedUsername")
 	if unfollowedUsername == username || unfollowedUsername == "" || len(unfollowedUsername) < 3 || len(unfollowedUsername) > 16 {
 		w.WriteHeader(http.StatusBadRequest)

@@ -51,7 +51,6 @@ type Stream struct {
 	}
 }
 
-// var Logged = User{}
 var errUncorrectLogin string = "User is not correctly authenticated"
 
 func formatId(id string) string {

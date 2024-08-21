@@ -28,6 +28,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
+	// Generate new photo ID
 	var newPhotoID string
 	generateID, err := uuid.NewV4()
 	if err != nil {
@@ -45,6 +46,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
+	// Retrieve the file
 	picture, picHandler, err := r.FormFile("picture")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -61,7 +63,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	// Opena and read image data
+	// Open and read image data
 	file, err := picHandler.Open()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -87,6 +89,7 @@ func (rt *_router) uploadNewPhoto(w http.ResponseWriter, r *http.Request, ps htt
 		Description: description,
 	}
 
+	// Post the new photo
 	photo, _ := json.Marshal(newPhoto)
 	err = rt.db.PostPhoto(string(photo))
 	if err != nil {

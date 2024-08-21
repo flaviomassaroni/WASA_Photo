@@ -24,7 +24,6 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 
 	// check username to follow and proceed it exists
 	followedUsername := ps.ByName("followedUsername")
-	// fmt.Println(followedUsername)
 	if followedUsername == username || followedUsername == "" || len(followedUsername) < 3 || len(followedUsername) > 16 {
 		w.WriteHeader(http.StatusBadRequest)
 		message = fmt.Sprintf("The provided username '%s' is not valid", followedUsername)
@@ -33,7 +32,6 @@ func (rt *_router) followUser(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 
 	followedUser, err := rt.db.GetByUsername(followedUsername)
-	// fmt.Println(followedUser)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		message = fmt.Sprintf("The username '%s' doesn't exist", followedUsername)

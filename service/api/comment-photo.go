@@ -51,6 +51,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		newCommentID = formatId(generateID.String())
 	}
 
+	// check photo to comment and proceed if it exists
 	existsPhoto, commentingPhoto, errP := rt.db.GetPhotoById(ps.ByName("photoid"))
 	if errP != nil {
 		message = "Error commenting the photo"
@@ -65,6 +66,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
+	// check if the user is banned
 	banned, errB := rt.db.IsBannedBy(token, commentingPhoto.AuthorID)
 	if banned || errB != nil {
 		message = "User cannot like the photo"
@@ -81,6 +83,7 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		DateAndTime: strconv.FormatInt(time.Now().Unix(), 10),
 	}
 
+	// add the comment to the database
 	comment, _ := json.Marshal(newComment)
 	err = rt.db.AddComment(string(comment))
 	if err != nil {
@@ -89,7 +92,6 @@ func (rt *_router) commentPhoto(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	// ctx.Logger.Info("Comment added to photo " + newComment.PhotoID + ": " + newComment.CommentText)
 	commentedPhoto, _ := rt.db.GetPhotoData(newComment.PhotoID)
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(commentedPhoto)
